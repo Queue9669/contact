@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:contacts_service/contacts_service.dart';
 
 void main() {
   runApp( MaterialApp(
@@ -12,6 +14,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+  getPermission() async {
+    var status = await Permission.contacts.status;
+    if (status.isGranted) {
+      print('accessed');
+      var contacts = await ContactsService.getContacts(withThumbnails: false);
+      
+    } else if (status.isDenied) {
+      print('failed');
+      Permission.contacts.request();
+    }
+  }
+
   var total=3;
   var contacts = [
     {'name': '김영숙', 'phone': '010-1234-5678'},
@@ -56,6 +71,7 @@ class _MyAppState extends State<MyApp> {
             icon: Icon(Icons.sort_by_alpha),
             onPressed: sortContacts, // 이름 정렬 버튼
           ),
+          IconButton(onPressed: (){ getPermission(); }, icon : Icon(Icons.contacts))
         ],
       ),
       body: ListView.builder(
