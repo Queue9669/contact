@@ -19,8 +19,10 @@ class _MyAppState extends State<MyApp> {
     var status = await Permission.contacts.status;
     if (status.isGranted) {
       print('accessed');
-      var contacts = await ContactsService.getContacts(withThumbnails: false);
-      
+      var contact = await ContactsService.getContacts(withThumbnails: false);
+      setState(() {
+        contacts = contact;
+      });
     } else if (status.isDenied) {
       print('failed');
       Permission.contacts.request();
@@ -28,11 +30,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   var total=3;
-  var contacts = [
-    {'name': '김영숙', 'phone': '010-1234-5678'},
-    {'name': '홍길동', 'phone': '010-2345-6789'},
-    {'name': '피자집', 'phone': '010-3456-7890'}
-  ];
+  var contacts = [];
 
   addContact(name, phone) {
     setState(() {
@@ -65,7 +63,7 @@ class _MyAppState extends State<MyApp> {
           );}
       ),
       appBar: AppBar(
-        title: Text(total.toString()),
+        title: Text('YH Contact App'),
         actions: [
           IconButton(
             icon: Icon(Icons.sort_by_alpha),
@@ -80,12 +78,12 @@ class _MyAppState extends State<MyApp> {
           return ListTile(
             leading: Icon(Icons.person), // 이미지 대신 아이콘
             title: Text(contacts[i]['name']!),
-            subtitle: Text(contacts[i]['phone']!), // 전화번호 표시
+            subtitle: Text(contacts[i]['phone']!), // 전화번호표시
             trailing: IconButton(
               icon: Icon(Icons.delete, color: Colors.red),
               onPressed: () {
                 setState(() {
-                  contacts.removeAt(i); // 연락처 삭제
+                  contacts.removeAt(i); // 연락처삭제
                   total--;
                 });
               },
@@ -122,17 +120,17 @@ class DialogUI extends StatelessWidget {
     final phoneController = TextEditingController();
 
     return AlertDialog(
-      title: Text("새 연락처 추가"),
+      title: Text("Add new contact"),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: nameController,
-            decoration: InputDecoration(labelText: "이름"),
+            decoration: InputDecoration(labelText: "Name"),
           ),
           TextField(
             controller: phoneController,
-            decoration: InputDecoration(labelText: "전화번호"),
+            decoration: InputDecoration(labelText: "Phone"),
             keyboardType: TextInputType.phone,
           ),
         ],
@@ -142,7 +140,7 @@ class DialogUI extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context); // 닫기
           },
-          child: Text("취소"),
+          child: Text("Cancel"),
         ),
         TextButton(
           onPressed: () {
@@ -150,16 +148,20 @@ class DialogUI extends StatelessWidget {
               addOne();
               addContact(nameController.text, phoneController.text);
               Navigator.pop(context);
+              //실제 폰연락처에 저장
+              var newContact = Contact();
+              newContact.givenName = inputData.text;  //새로운 연락처 만들기
+              ContactsService.addContact(newContact);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                content: Text("値を正しく入力してください。"),
+                content: Text("Please enter the value correctly"),
                 duration: Duration(seconds: 2),
                 ),
               );
             }
           },
-          child: Text("추가"),
+          child: Text("add"),
         ),
       ],
     );
